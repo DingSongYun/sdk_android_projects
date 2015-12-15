@@ -1,0 +1,39 @@
+# This file is information of local configuration for 
+# project building
+
+# location of the SDK. This is only used by Ant
+# For customization when using a Version Control System, please read the
+# header note.
+# /Users/dingsongyun/SDK/android-sdk-macosx/ 
+sdk.dir=/Users/dingsongyun/SDK/android-sdk-macosx
+
+# local build-tools folder
+build.tools.target=19.0.2
+
+# location of locale keystore file
+keystore.file=/Users/dingsongyun/Workspace/keyStore/HappiPlay.keystore
+keystore.alias=happinine
+keystore.password=happiplay123
+
+# do not modify this
+base.market.platform=tencent
+
+# target platform folder which contains platform operator classes
+# that need to be compiled in, the folder name here should be the same
+# with corresponding under java source hierarchy
+target.market.platform=jifeng
+
+# jar files for platform operation
+jar.lib.platform.file=
+
+# referenced project need to be compiled in
+referenced.project=GfanSDK3.3
+
+# channel id
+channel.id=\u673A\u950B
+
+# if you want change package name, here you can do this easily
+package.name=com.happiplay.texas
+
+# the result apk name 
+out.apk.name=texax_jifeng_v1.1.6

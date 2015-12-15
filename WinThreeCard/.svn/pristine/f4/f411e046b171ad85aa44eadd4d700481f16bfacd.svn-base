@@ -1,0 +1,38 @@
+package com.happiplay.texas.wxapi;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.util.Log;
+
+import com.happiplay.tools.ShareResult;
+import com.happiplay.tools.ShareTools;
+import com.tencent.mm.sdk.openapi.IWXAPIEventHandler;
+import com.tencent.mm.sdk.openapi.BaseReq;
+import com.tencent.mm.sdk.openapi.BaseResp;
+//
+//public class WXEntryActivity extends Activity implements IWXAPIEventHandler{
+//	private static final String LOG_TAG = "WXEntryActivity";
+//	
+//	@Override
+//	public void onCreate(Bundle savedInstanceState) {
+//		Log.d(LOG_TAG, "onCreate()");
+//		ShareTools.getWXApiInstance().handleIntent(getIntent(), this);
+//		super.onCreate(savedInstanceState);
+//	}
+//
+//	public void onReq(BaseReq req) {
+//		Log.d(LOG_TAG, "on share request:");
+//	}
+//	
+//	public void onResp(BaseResp resp) {
+//		Log.d(LOG_TAG, "on share response:" + resp.errCode);
+//		if (resp.errCode == BaseResp.ErrCode.ERR_OK) {
+//			ShareTools.sendShareCallbackMsg(ShareResult.RESULT_SUCCESS);
+//		} else if (resp.errCode == BaseResp.ErrCode.ERR_USER_CANCEL) {
+//			ShareTools.sendShareCallbackMsg(ShareResult.RESULT_CANCELED);
+//		} else {
+//			ShareTools.sendShareCallbackMsg(ShareResult.RESULT_FAILED, resp.errStr);
+//		}
+//		finish();
+//	}
+//}

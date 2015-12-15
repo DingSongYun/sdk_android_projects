@@ -1,0 +1,44 @@
+# This file is information of local configuration for 
+# project building
+
+# location of the SDK. This is only used by Ant
+# For customization when using a Version Control System, please read the
+# header note.
+# /Users/dingsongyun/SDK/android-sdk-macosx/ 
+sdk.dir=/Users/dingsongyun/SDK/android-sdk-macosx
+
+# local build-tools folder
+build.tools.target=19.0.2
+
+# location of locale keystore file
+keystore.file=/Users/dingsongyun/Workspace/keyStore/HappiPlay.keystore
+keystore.alias=happinine
+keystore.password=happiplay123
+
+# do not modify this
+base.market.platform=tencent
+jar.libs.base.platform=open_sdk.jar,mta-sdk-1.0.0.jar
+jar.libs.for.share=libammsdk.jar
+
+# target platform folder which contains platform operator classes
+# that need to be compiled in, the folder name here should be the same
+# with corresponding under java source hierarchy
+target.market.platform=paytools
+
+# jar files for platform operation
+jar.libs.target.platform=
+
+# referenced project need to be compiled in
+referenced.project=alipay_lib
+
+# umeng channel id
+channel.id=\u8C4C\u8C46\u835A
+
+# if you want change package name, here you can do this easily
+package.name=com.happiplay.texas
+
+# the result apk name 
+out.apk.name=texas_wandj_v1.2.0
+
+# Configures for JPUSH
+jpush.appkey=345e9c25621c607d3939a6de

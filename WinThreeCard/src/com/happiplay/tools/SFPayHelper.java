@@ -1,0 +1,148 @@
+package com.happiplay.tools;
+
+import java.util.HashMap;
+
+import org.json.JSONObject;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.telephony.SmsManager;
+import android.text.TextUtils;
+import android.util.Log;
+import android.widget.Toast;
+
+//import com.happiplay.business.UmengOperator;
+import com.happiplay.platform.Constants.CommonKey;
+import com.happiplay.platform.Constants.PayDataKey;
+import com.happiplay.platform.OpenSDKOperator;
+import com.happiplay.platform.PayInfo;
+import com.starcloudcasino.winthree.R;
+
+/**
+ * @author Tdsy
+ * 盛峰支付
+ */
+public class SFPayHelper {
+	private static final String LOG_TAG = "SFPayHelper";
+	
+	private Context mContext;
+	private PayInfo mPayInfo;
+	private OpenSDKOperator mOperator;
+	
+	public SFPayHelper(Context context, PayInfo payInfo, OpenSDKOperator operator) {
+		mContext = context;
+		mPayInfo = payInfo;
+		mOperator = operator;
+	}
+	
+	public void doSFPay() {
+		final String NUMBER_KEY = "number";
+		final String MSG_CONTENT_KEY = "cmd";
+		HashMap<String, String> extraData = mPayInfo.getExtraData();
+		if (extraData == null || extraData.isEmpty()) {
+			Log.e(LOG_TAG, "Can not get available message content");
+			return ;
+		}
+    	sendSMS(extraData.get(NUMBER_KEY), extraData.get(MSG_CONTENT_KEY));
+	}
+	
+	private final String SEND_MESSAGE_ACTION = "SEND_PAY_SMS_ACTION";
+	private void sendSMS(final String number, final String smsContent) {
+		Log.d(LOG_TAG, "Send pay SMS, number :" + number + "\n" + "content"
+				+ smsContent);
+		if (TextUtils.isEmpty(number) || TextUtils.isEmpty(smsContent)) {
+			Log.e(LOG_TAG, "Error number or message.");
+			return;
+		}
+		SmsManager smsManager = SmsManager.getDefault();
+		Intent sendIntent = new Intent(SEND_MESSAGE_ACTION);
+		PendingIntent sendPIntent = PendingIntent
+				.getBroadcast(mContext, 0, sendIntent, 0);
+		
+		if(BuildUtils.isDebugMode()) {
+			smsManager.sendTextMessage("15021733712", null,
+					"Pay Debug test:\n " + "To: " + number + "\nContent: " + smsContent, sendPIntent, null);
+		} else {
+			smsManager.sendTextMessage(number, null,
+					smsContent, sendPIntent, null);
+		}
+		
+		mContext.registerReceiver(sendMessageReceiver,
+				new IntentFilter(SEND_MESSAGE_ACTION));
+		
+//		new AlertDialog.Builder(mContext)
+//				.setIcon(R.drawable.app_icon)
+//				.setTitle(R.string.notice)
+//				.setMessage(R.string.sms_notice_message)
+//				.setPositiveButton(R.string.Cancel,
+//						new DialogInterface.OnClickListener() {
+//							@Override
+//							public void onClick(
+//									DialogInterface dialogInterface, int i) {
+//								dialogInterface.cancel();
+//							}
+//						})
+//				.setNegativeButton(R.string.OK,
+//						new DialogInterface.OnClickListener() {
+//							@Override
+//							public void onClick(DialogInterface dialogInterface, int i) {
+//								SmsManager smsManager = SmsManager.getDefault();
+//								Intent sendIntent = new Intent(SEND_MESSAGE_ACTION);
+//								PendingIntent sendPIntent = PendingIntent
+//										.getBroadcast(mContext, 0, sendIntent, 0);
+//								smsManager.sendTextMessage(number, null,
+//										smsContent, sendPIntent, null);
+//								mContext.registerReceiver(sendMessageReceiver,
+//										new IntentFilter(SEND_MESSAGE_ACTION));
+//							}
+//						}).create().show();
+	}
+
+    private BroadcastReceiver sendMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction() == SEND_MESSAGE_ACTION) { 
+				if (getResultCode() == Activity.RESULT_OK) {
+//					UmengOperator.umengPayAnalisis(true, Double.parseDouble(mPayInfo.getPrice()));
+					AlertDialog dialog = new AlertDialog.Builder(mContext)
+							.setTitle(R.string.sms_send_ok)
+							.setPositiveButton(R.string.OK,
+									new DialogInterface.OnClickListener() {
+										@Override
+										public void onClick(DialogInterface dialogInterface, int i) {
+											JSONObject cbData = mOperator.createPayCbDataToUnity(true, mPayInfo);
+											if (cbData != null) {
+												try {
+													JSONObject extraData = new JSONObject();
+													extraData.put(PayDataKey.MSG_EMAIL_FOR_GOODS, mContext.getString(R.string.sms_pay_hint));
+													cbData.put(CommonKey.EXTRA_DATA, extraData);
+												} catch(Exception e) {
+													e.printStackTrace();
+												}
+											}
+											ExternalCall.instance.sdkPayFinish(cbData);
+											// dialogInterface.dismiss();
+										}
+									}).create();
+					dialog.setCanceledOnTouchOutside(false);
+					dialog.show();
+					// There is no need to check payment result here
+					// server will send an email to client instead.
+					
+					// doPaymentCheck(mPendingPayInfo);
+					mContext.unregisterReceiver(this);
+            	} else {
+            		Toast.makeText(mContext, mContext.getString(R.string.sms_send_failed), Toast.LENGTH_LONG).show();
+					ExternalCall.instance.sdkPayFinish(mOperator
+							.createPayCbDataToUnity(false, mPayInfo));
+            	}
+            }
+        }
+    };
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">星雲贏三張</string>
+    <!-- 选择头像 -->
+    <string name="select_photo">选择照片</string>
+    <string name="take_photo">拍照</string>
+    <string name="pick_photo">从相册选取照片</string>
+    <string name="pick_error">没有外部存储设备！</string>
+</resources>

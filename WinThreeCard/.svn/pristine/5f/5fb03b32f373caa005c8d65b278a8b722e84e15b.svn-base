@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * @author Tdsy
+ * configuration file for gameapp info for kinds of platform 
+ * a full app configuration should be as follow
+ *	<GameApp id="">
+ *		<appname>Nessary:provide a name for game app</appname>
+ *		<platform>
+ * 			Nessary:specific which platform this game configurate for.
+ *			It must be one of the follow:
+ *					chinaMM				tencent				google
+ *					qihoo360			baidu				sina_weibo
+ *					more ...
+ *		</platform>
+ *		<appid>Nessary:obtain from platform you register your game</appid>
+ *		<appkey>Nessary:obtain from platform you register your game</appkey>
+ *		<orientation>Optional:default is landscape</orientation>
+ *		<active>
+ *			Optional:the all active gameapp-info will be loaded into memory,
+ *			fundamental purpose of this attr is to provide some option for the
+ *			platform which need other platform's sdk to login or do payment.
+ *			Default is true, please remember to disable this for some unnessary
+ *			gameapp infomation.
+ *		</active>
+ *	</GameApp>
+ *
+ *	<main_platform>
+ *		Nessary: project will read this to decide which platform this game mainly for
+ *	</main_platform>
+ -->
+<configurate>
+	<GameApp id="ddz_baidu" active="true">
+	    <appname>doudizhu</appname>
+	    <platform>baidu</platform>
+	    <appid>2070000</appid>
+	    <appkey>BAGaacTH2OkT8HFdNziRGyPb</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.baidu.OpenBaiduSDKOperator</operator>
+	</GameApp>
+	
+	<GameApp id="ddz_360" active="false">
+	    <appname>doudizhu</appname>
+	    <platform>pf_qihoo_360</platform>
+	    <appid>201337636</appid>
+	    <appkey>a5605a7fcb16ea31fa5981bafbb99f70</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.qihoo360.Open360SDKOperator</operator>
+	</GameApp>
+	
+	<GameApp id="ddz_QQ" active="true">
+	    <appname>doudizhu</appname>
+	    <platform>pf_tencent</platform>
+	    <appid>1101073982</appid>
+	    <appkey>nLyMvE9mgBd70PvO</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.tencent.OpenTencentSDKOperator</operator>
+	</GameApp>
+	
+	<GameApp id="ddz_google" >
+	    <appname>ddz</appname>
+	    <platform>pf_google</platform>
+	    <appid>11111111</appid>
+	    <appkey>asdasdasdasdas</appkey>wx144f290aff2d8da7
+	    <wechat-appid>wx144f290aff2d8da7</wechat-appid>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.googleplay.OpenFacebookSDKOperator</operator>
+		<channel>googleplay</channel>
+	</GameApp>
+	
+	<GameApp id="ddz_google_mainland" active="true">
+	    <appname>doudizhu</appname>
+	    <platform>pf_google_mainland</platform>
+	    <appid>1101073982</appid>
+	    <appkey>nLyMvE9mgBd70PvO</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.tencent.OpenTencentSDKOperator</operator>
+		<channel>googleplay_mainland</channel>
+	</GameApp>
+	
+	<GameApp id="texas_ChinaMM">
+        <appname>doudizhu</appname>
+	    <platform>pf_china_mm</platform>
+	    <appid>300008139081</appid>
+	    <appkey>96F3E3537A8FDB9F</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.chinaMM.OpenChinaMMSDKOperator</operator>
+		<channel>chinaMM</channel>
+	</GameApp>
+	
+	<GameApp id="texas_QQ" >
+	    <appname>texas</appname>
+	    <platform>pf_tencent</platform>
+	    <appid>100306027</appid>
+	    <wechat-appid>wx540895474c4184d3</wechat-appid>
+	    <appkey>6d6b0e5c483e6e7de3fa69ebfce611ee</appkey>
+		<operator>com.happiplay.platform.tencent.OpenTencentSDKOperator</operator>
+		<orientation>landscape</orientation>
+		<channel>yingyongbao</channel>
+	</GameApp>
+	
+	<GameApp id="texas_yingyh" >
+	    <appname>texas</appname>
+	    <platform>pf_yingyh</platform>
+	    <appid>100306027</appid>
+	    <wechat-appid>wx144f290aff2d8da7</wechat-appid>
+	    <appkey>6d6b0e5c483e6e7de3fa69ebfce611ee</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.tencent.OpenTencentSDKOperator</operator>
+		<channel>yingyonghui</channel>
+	</GameApp>
+	
+	<GameApp id="texas_yuema" >
+	    <appname>texas</appname>
+	    <platform>pf_tencent</platform>
+	    <appid>100306027</appid>
+	    <wechat-appid>wx144f290aff2d8da7</wechat-appid>
+	    <appkey>nLyMvE9mgBd70PvO</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.tencent.OpenTencentSDKOperator</operator>
+		<channel>yuema</channel>
+	</GameApp>
+	
+	<GameApp id="texas_pingan" >
+	    <appname>texas</appname>
+	    <platform>pf_tencent</platform>
+	    <appid>100306027</appid>
+	    <wechat-appid>wx144f290aff2d8da7</wechat-appid>
+	    <appkey>nLyMvE9mgBd70PvO</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.tencent.OpenTencentSDKOperator</operator>
+		<channel>pingan_game</channel>
+	</GameApp>
+	
+	<GameApp id="texas_anzhi" >
+	    <appname>texas</appname>
+	    <platform>pf_anzhi</platform>
+	    <appid>100306027</appid>
+	    <wechat-appid>wx144f290aff2d8da7</wechat-appid>
+	    <appkey>14005543397yvR4W8G2UHrmBTo5IKe</appkey>
+	    <appsecret>EzGLPel158bliU5oJo371A9r</appsecret>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.anzhi.OpenAnZhiSDKOperator</operator>
+		<channel>anzhi</channel>
+	</GameApp>
+	
+	<GameApp id="texas_wandoujia" >
+	    <appname>texas</appname>
+	    <platform>pf_wandoujia</platform>
+	    <appid>100306027</appid>
+	    <wechat-appid>wx144f290aff2d8da7</wechat-appid>
+	    <appkey>nLyMvE9mgBd70PvO</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.tencent.OpenTencentSDKOperator</operator>
+		<channel>wandoujia</channel>
+	</GameApp>
+	
+	<GameApp id="texas_gfan" >
+	    <appname>texas</appname>
+	    <platform>pf_jifeng</platform>
+	    <appid>2128536472</appid>
+	    <wechat-appid>wx144f290aff2d8da7</wechat-appid>
+	    <appkey>c482ccf4691bf637</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.jifeng.OpenGfanSDKOperator</operator>
+		<channel>jifeng</channel>
+	</GameApp>
+	
+	<GameApp id="texas_google" >
+	    <appname>texas</appname>
+	    <platform>pf_google</platform>
+	    <appid>2128536472</appid>
+	    <wechat-appid>wx144f290aff2d8da7</wechat-appid>
+	    <appkey>c482ccf4691bf637</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.googleplay.OpenFacebookSDKOperator</operator>
+		<channel>googleplay</channel>
+	</GameApp>
+	
+	<GameApp id="texas_google_mainland" >
+	    <appname>texas</appname>
+	    <platform>pf_google_mainland</platform>
+	    <appid>100306027</appid>
+	    <wechat-appid>wx144f290aff2d8da7</wechat-appid>
+	    <appkey>6d6b0e5c483e6e7de3fa69ebfce611ee</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.tencent.OpenTencentSDKOperator</operator>
+		<channel>google_mainland</channel>
+	</GameApp>
+	
+	<GameApp id="texas_baidu" >
+	    <appname>texas</appname>
+	    <platform>pf_baidu</platform>
+	    <appid>1953630</appid>
+	    <wechat-appid>wx144f290aff2d8da7</wechat-appid>
+	    <appkey>SZBg2qxjA6y2HDGN0zfuvOZv</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.baidu.OpenBaiduSDKOperator</operator>
+		<channel>baidu</channel>
+	</GameApp>
+	
+	<GameApp id="texas_baidu_youguo" >
+	    <appname>texas</appname>
+	    <platform>pf_baidu_youguo</platform>
+	    <appid>2153273</appid>
+	    <wechat-appid>wx144f290aff2d8da7</wechat-appid>
+	    <appkey>O0phiD5BIDxjGQVdpdeRvCd2</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.baidu.OpenBaiduSDKOperator</operator>
+		<channel>youguo_baidu</channel>
+	</GameApp>
+	
+	<GameApp id="texas_360">
+	    <appname>texas</appname>
+	    <platform>pf_qihoo_360</platform>
+	    <appid>201437116</appid>
+	    <wechat-appid>wx144f290aff2d8da7</wechat-appid>
+	    <appkey>de7856804fd3d0513c540cf7cb3b97a7</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.qihoo360.Open360SDKOperator</operator>
+		<channel>qihoo360</channel>
+	</GameApp>
+	
+	<GameApp id="texas_91">
+	    <appname>texas</appname>
+	    <platform>pf_91_game</platform>
+	    <appid>113643</appid>
+	    <wechat-appid>wx144f290aff2d8da7</wechat-appid>
+	    <appkey>4824063228ffc0363c9477a9de1e39f51a22f6d2b5b370ce</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.qihoo360.Open360SDKOperator</operator>
+		<channel>qihoo360</channel>
+	</GameApp>
+	
+	<GameApp id="texas_xiaocong">
+	    <appname>texas</appname>
+	    <platform>pf_xiaocong</platform>
+	    <appid>100034</appid>
+	    <appkey>mnqw6xcb3poia7dflk9zqtk</appkey>
+	    <appsecret>mnqw6xcb3poia7dflk9zqtk</appsecret>
+	    <wechat-appid>wx144f290aff2d8da7</wechat-appid>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.xiaocong.OpenXiaocongSDKOperator</operator>
+		<channel>qihoo360</channel>
+	</GameApp>
+	
+	<GameApp id="win3_google" >
+	    <appname>Win Threen Card</appname>
+	    <platform>pf_google</platform>
+	    <appid>2128536472</appid>
+	    <wechat-appid>wx144f290aff2d8da7</wechat-appid>
+	    <appkey>c482ccf4691bf637</appkey>
+		<orientation>landscape</orientation>
+		<operator>com.happiplay.platform.googleplay.OpenFacebookSDKOperator</operator>
+		<channel>googleplay</channel>
+	</GameApp>
+	
+	<main_platform platform="win3_google"/>
+
+</configurate>

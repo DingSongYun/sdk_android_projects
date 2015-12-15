@@ -1,0 +1,369 @@
+package com.happiplay.platform.tencent;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Handler;
+import android.text.TextUtils;
+import android.util.Log;
+
+import com.happiplay.platform.Constants.CommonKey;
+import com.happiplay.platform.Constants.LoginDataKey;
+import com.happiplay.platform.Constants.PayDataKey;
+import com.happiplay.platform.GameAppInfo.PayMode;
+import com.happiplay.platform.OpenSDKOperator;
+import com.happiplay.platform.PayInfo;
+import com.happiplay.tools.BuildUtils;
+import com.happiplay.tools.ExternalCall;
+import com.happiplay.tools.SFPayHelper;
+import com.happiplay.tools.ShareResult;
+import com.happiplay.tools.ShareTools;
+import com.happiplay.tools.ShareTools.AppShareInfo;
+import com.tencent.connect.share.QQShare;
+import com.tencent.connect.share.QzoneShare;
+import com.tencent.tauth.IUiListener;
+import com.tencent.tauth.Tencent;
+import com.tencent.tauth.UiError;
+
+public class OpenTencentSDKOperator extends OpenSDKOperator implements IUiListener{
+	
+	// The Tencent Class should be the main entrance
+	// for tencent openAPIS
+	private Tencent mTencent = null;
+//	OpenChinaMMSDKOperator mChinaMmOperator;
+	
+	/**
+	 * @author Tdsy
+	 * Never change easily
+	 */
+	private enum LoginInfo{
+		OPEN_ID("openid"),
+		ACCESS_TOKEN("access_token"),
+		EXPIRES_IN("expires_in");
+		
+		public String mKey = null;
+		
+		private LoginInfo(String key) {
+			mKey = key;
+		}
+		
+		public String key() {
+			return mKey;
+		}
+	}
+	
+	public OpenTencentSDKOperator(Context context) {
+		super(context);
+	}
+
+	@Override
+	public void doSDKLogin(String data) {
+		Log.d(LOG_TAG, "Do Tencent QQ Login.");
+		
+		// Check if the access_token which stored in shared preference
+		// is validate, return false if it is not exist or out of data
+    	SharedPreferences pref = mContext.getSharedPreferences(mContext.getPackageName(), Context.MODE_PRIVATE);
+    	if (pref != null) {
+	    	String openid = pref.getString(LoginInfo.OPEN_ID.key(), "");
+	    	String access_token = pref.getString(LoginInfo.ACCESS_TOKEN.key(), "");
+	    	long expires_in = pref.getLong(LoginInfo.EXPIRES_IN.key(), 0);
+	    	if (TextUtils.isEmpty(access_token)) {
+	    		Log.d(LOG_TAG, "have no stored access_token. Do login to get it.");
+	    	} else {
+	    		boolean isValidate = true;
+	
+				long dueDate = (expires_in - System.currentTimeMillis()) / 1000;
+				if (dueDate <= 0) {
+					isValidate = false;
+					Log.d(LOG_TAG, "The access_token is out of date.");
+				}
+	    			
+				if (isValidate) {
+					mTencent.setOpenId(openid);
+					mTencent.setAccessToken(access_token, String.valueOf(dueDate));
+					mTencent.loginWithOEM((Activity)mContext, "all", this, openid, access_token, String.valueOf(dueDate));
+					
+					return ;
+				}
+	    	}
+    	}
+		int returnCode = mTencent.login((Activity)mContext, "all", this);
+		Log.d(LOG_TAG, "Loggin code:" + returnCode);
+	}
+
+	/* 
+	 * 一般而言，腾讯平台作为公司国内标准登陆平台走的是支付宝和盛峰的短信支付·
+	 */
+	@Override
+	public void doSDKPay(String data, PayMode payMode) {
+		try {
+			Log.d(LOG_TAG, "do tencent pay:" + data);
+			JSONObject jsonObj = new JSONObject(data);
+			PayInfo payInfo = new PayInfo();
+			parsePayInfo(payInfo, data);
+			if (jsonObj.has(PayDataKey.PAY_TYPE)) {
+				String payType = jsonObj.getString(PayDataKey.PAY_TYPE);
+				Log.d(LOG_TAG, "Tencent pay type:" + payType);
+				if (com.happiplay.platform.Constants.PayType.PAY_TYPE_ALIPAY.equals(payType)) {
+					// 进行支付宝支付
+//					new AliPayHelper(mContext, payInfo, this).startAliPay();
+					try {
+						Class<?> aliPayerCls = Class.forName("com.happiplay.platform.paytools.AliPayHelper");
+						Method startPay = aliPayerCls.getDeclaredMethod("startAliPay", new Class[]{});
+						Object aliPay = aliPayerCls.getDeclaredConstructor(
+								new Class[] { Context.class, PayInfo.class,
+										OpenSDKOperator.class }).
+								newInstance(mContext, payInfo, this);
+						startPay.invoke(aliPay, new Object[]{});
+					} catch (Exception e) {
+						Log.e(LOG_TAG, "Do AliPay Failed.");
+						e.printStackTrace();
+					}
+				} else {
+					// 进行盛峰支付
+					new SFPayHelper(mContext, payInfo, this).doSFPay();
+				}
+			} else {
+				Log.e(LOG_TAG, "Can not identify how to execute payment.");
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void sdkInit(Activity activity) {
+		Log.d(LOG_TAG, "Do Tencent SDK Init.");
+		mTencent = Tencent.createInstance(mAppInfo.getAppId(), activity);
+//		mChinaMmOperator = (OpenChinaMMSDKOperator) SDKOperatorFactory
+//				.makeSDKOperator(activity, PlatformType.PLATFORM_CHINA_MM);
+//		mChinaMmOperator.sdkInit(activity);
+		
+	}
+
+	@Override
+	public void sdkDestroy() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void doSDKLogout(String data) {
+		Log.d(LOG_TAG, "QQ Logout.");
+		mTencent.logout(mContext);
+	}
+
+	/**
+	 * There are three key variables you should keep in mind that it
+	 * will be always used with SDK to do account operation:
+	 * 		openid : unique id for each account, also means each QQ
+	 * 		access_token : as every access_token do, it is the only
+	 * 				proof that SDK will use it to manipulate account
+	 * 				which period of validity is only 3month
+	 * 		expires_in : hold the information about due date of the token
+	 * Those information will be return with JSONObject as param of login 
+	 * callback function.In additional, tencent SDK will store those variable
+	 * information in context, and will use it automatically in some APIs. 
+	 */
+	@Override
+	public void onComplete(Object values) {
+        Log.d(LOG_TAG, "QQ onComplete()");
+        try {
+        	
+        	// TODO: Handle login failed
+        	boolean isSuccessed = true ;
+        	
+        	JSONObject response = (JSONObject) values;
+        	Log.d(LOG_TAG, "QQ onComplete()" + response.toString());
+            String accessToken = response.getString(LoginInfo.ACCESS_TOKEN.key());
+            String openId = response.getString(LoginInfo.OPEN_ID.key());
+            String expires_in = response.getString(LoginInfo.EXPIRES_IN.key());
+			Log.i(LOG_TAG, "token:" + accessToken + ", openId:" + openId
+					+ ", expires_in:" + expires_in);
+            
+            // Store access_token into sharedpreference for next login
+            SharedPreferences pref = mContext.getSharedPreferences(mContext.getPackageName(), Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = pref.edit();
+            editor.putString(LoginInfo.OPEN_ID.key(), openId);
+            editor.putString(LoginInfo.ACCESS_TOKEN.key(), accessToken);
+            long dueDate = System.currentTimeMillis() + Long.parseLong(expires_in) * 1000;
+            editor.putLong(LoginInfo.EXPIRES_IN.key(), dueDate);
+            editor.commit();
+          
+            JSONObject backData = new JSONObject();
+            backData.put(CommonKey.STATUS, isSuccessed ? 1 :  0);
+            JSONObject data = new JSONObject();
+            if (isSuccessed) {
+	            data.put(LoginDataKey.token, accessToken);
+	            // Here the openId treat as user_id, both are to identity user
+	            data.put(LoginDataKey.user_id, openId);
+	            // user_name is useless here
+	            data.put(LoginDataKey.user_name, "");
+	            data.put(LoginDataKey.platform, BuildUtils.getPlatformType().getPlatform());
+            } else {
+            	// TODO: ErrorMsg~
+            	data.put(LoginDataKey.error, "ErrorMsg");
+            }
+            backData.put(CommonKey.DATA, data);
+//			ExternalCall.callUnity(mCmdid, backData);
+            ExternalCall.instance.sdkLoginFinish(backData);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+	}
+
+	@Override
+	public void onCancel() {
+		Log.d(LOG_TAG, "QQ Login Cancel.");
+	}
+	
+	@Override
+	public void onError(UiError e) {
+		Log.i(LOG_TAG, "QQ Login Error ==> \n " + 
+						"			Message:" + e.errorMessage + " \n" + 
+						"			detail:" + e.errorDetail + "\n" + 
+						"			code:" +  e.errorCode);		
+	}
+
+	@Override
+	public void onLoginFinished(String data) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void doSDKShareToFriend(AppShareInfo shareInfo, final Handler callback, final int callbackMsg) {
+		Log.d(LOG_TAG, "Share to QQ");
+		Bundle params = new Bundle();
+//		params.putInt(SocialConstants.PARAM_TITLE, Tencent.SHARE_TO_QQ_TYPE_DEFAULT);
+		params.putInt(QQShare.SHARE_TO_QQ_KEY_TYPE, QQShare.SHARE_TO_QQ_TYPE_DEFAULT);
+		params.putString(QQShare.SHARE_TO_QQ_TITLE, shareInfo.title);
+		params.putString(QQShare.SHARE_TO_QQ_SUMMARY, shareInfo.summary);
+	    params.putString(QQShare.SHARE_TO_QQ_IMAGE_URL, shareInfo.image_url);
+	    params.putString(QQShare.SHARE_TO_QQ_TARGET_URL, shareInfo.target_url);
+	    params.putString(QQShare.SHARE_TO_QQ_APP_NAME,  BuildUtils.getAppName());
+	    mTencent.shareToQQ((Activity)mContext, params, new IUiListener() {
+			
+			@Override
+			public void onError(UiError arg0) {
+				ShareTools.sendShareCallbackMsg(callback, callbackMsg, ShareResult.RESULT_FAILED, arg0.errorMessage);
+			}
+			
+			@Override
+			public void onComplete(Object arg0) {
+				ShareTools.sendShareCallbackMsg(callback, callbackMsg, ShareResult.RESULT_SUCCESS);
+			}
+			
+			@Override
+			public void onCancel() {
+				ShareTools.sendShareCallbackMsg(callback, callbackMsg, ShareResult.RESULT_CANCELED);
+			}
+		});
+	    
+	}
+	
+    @Override
+    public void doSDKInviteFriend(AppShareInfo shareInfo, final Handler callback, final int callbackMsg) {
+    	Log.d(LOG_TAG, "Invite QQ friend.");
+    	// As we have not got the permission use this Api
+    	// So here do fake invite but actually share to QQ friend
+    	doSDKShareToFriend(shareInfo, callback, callbackMsg);
+    	return;
+    }
+    
+    public void shareToQQZone(AppShareInfo shareInfo, final Handler callback, final int callbackMsg) {
+    	Bundle params = new Bundle();
+        params.putInt(QzoneShare.SHARE_TO_QZONE_KEY_TYPE, QzoneShare.SHARE_TO_QZONE_TYPE_IMAGE_TEXT);
+        params.putString(QzoneShare.SHARE_TO_QQ_TITLE, shareInfo.title);
+        params.putString(QzoneShare.SHARE_TO_QQ_SUMMARY, shareInfo.summary);
+        params.putString(QzoneShare.SHARE_TO_QQ_TARGET_URL, shareInfo.target_url);
+        ArrayList<String> imageUrls = new ArrayList<String>();
+        imageUrls.add(shareInfo.image_url);
+        params.putStringArrayList(QzoneShare.SHARE_TO_QQ_IMAGE_URL, imageUrls);
+//        params.putString(QzoneShare.SHARE_TO_QQ_IMAGE_URL, ShareTools.AppShareInfo.image_url);
+        mTencent.shareToQzone((Activity)mContext, params, new IUiListener() {
+			
+			@Override
+			public void onError(UiError arg0) {
+				Log.d(LOG_TAG, "share to Qzone failed:" + arg0.errorMessage);	
+				ShareTools.sendShareCallbackMsg(callback, callbackMsg, ShareResult.RESULT_FAILED, arg0.errorMessage);
+			}
+			
+			@Override
+			public void onComplete(Object arg0) {
+				Log.d(LOG_TAG, "share to Qzone completed");
+				ShareTools.sendShareCallbackMsg(callback, callbackMsg, ShareResult.RESULT_SUCCESS);
+			}
+			
+			@Override
+			public void onCancel() {
+				Log.d(LOG_TAG, "share to Qzone canceled");
+				ShareTools.sendShareCallbackMsg(callback, callbackMsg, ShareResult.RESULT_CANCELED);
+			}
+		});
+////        String imageUrl = "XXX";
+////        params.putString(Tencent.SHARE_TO_QQ_IMAGE_URL, imageUrl);
+//        params.putStringArrayList(QzoneShare.SHARE_TO_QQ_IMAGE_URL, imageUrls);
+//        doShareToQzone(params);
+    }
+
+//    public void sharedToTencentWeibo(AppShareInfo shareInfo, final Handler callback, final int callbackMsg) {
+//    	if (mTencent.isSessionValid()) {
+//    		Weibo mWeibo = new Weibo(mContext, mTencent.getQQToken());
+//			Uri fileUri = Uri.parse("android.resource://"
+//					+ mContext.getPackageName() + "/" + "drawable-mdpi/wxmm.png");
+//			String imagePath = SystemUtils.getRealPathFromUri(
+//					(Activity) mContext, fileUri);
+//    		Log.d(LOG_TAG, "image path:" + imagePath);
+//			mWeibo.sendText(shareInfo.title + "\n"
+//					+ shareInfo.summary + "\n"
+//					+ shareInfo.target_url,
+//					/*imagePath,*/ new IUiListener() {
+//
+//						@Override
+//						public void onError(UiError e) {
+//							Log.d(LOG_TAG, "Send weibo failed: " + e.errorDetail + ", error message:" + e.errorMessage);
+//							CommonTools.dismissProgress();
+//						}
+//
+//						@Override
+//						public void onComplete(Object response) {
+//							Log.d(LOG_TAG, "Send weibo completed.");
+//							CommonTools.dismissProgress();
+//						}
+//
+//						@Override
+//						public void onCancel() {
+//							Log.d(LOG_TAG, "Send weibo canceled.");
+//							CommonTools.dismissProgress();
+//						}
+//					});
+//			CommonTools.showProgress(mContext, ProgressDialog.STYLE_SPINNER,
+//					null,
+//					mContext.getString(R.string.dialogcontent_waitting_up));
+//    	} else {
+//    		mTencent.login((Activity)mContext, "all", new IUiListener() {
+//				
+//				@Override
+//				public void onError(UiError arg0) {
+//				}
+//				
+//				@Override
+//				public void onComplete(Object arg0) {
+//					doSDKSendTencentWeibo();
+//				}
+//				
+//				@Override
+//				public void onCancel() {
+//				}
+//			});
+//    	}
+//    }
+}

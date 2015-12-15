@@ -1,0 +1,721 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build_rules" default="release">
+
+    <loadproperties srcFile="project.properties" />
+	<loadproperties srcFile="build_files/win3/google_platform.properties" />
+	<!-- <loadproperties srcFile="build_files/ddz/tencent_platform.properties" /> -->
+	
+    <!-- Environment variable -->
+    <property environment="env" />
+    <condition property="sdk.dir" value="${env.ANDROID_SDK_HOME}">
+        <isset property="env.ANDROID_SDK_HOME" />
+    </condition>
+    
+    <!-- Custom ant lib -->
+    <taskdef resource="antlib.properties" >
+        <classpath>
+            <pathelement location="ant_custom.jar" />
+        </classpath>
+    </taskdef>
+    
+    <!-- Application name -->
+    <property name="app.name" value="${ant.project.name}" />
+	
+    <!-- target platform from project.properties file -->
+    <property name="android.platform.target" 	value="${target}" />
+	<property name="android.tools.dir" 			location="${sdk.dir}/tools" />	
+    <property name="android.platform.tools.dir" location="${sdk.dir}/platform-tools" />
+    <property name="android.platform.dir" 		location="${sdk.dir}/platforms/${android.platform.target}/"/>     
+	<property name="android.build.tools.dir" 	location="${sdk.dir}/build-tools/${build.tools.target}" />    
+    <echo message="android.jar: ${target}" />
+    <condition property="exe" value=".exe" else="">
+        <os family="windows" />
+    </condition>
+   	<condition property="bat" value=".bat" else="">
+        <os family="windows" />
+    </condition>
+    
+    <!-- **************************************************** -->
+    <!-- ****************** setup build tools *************** --> 
+    <!-- **************************************************** -->   
+    <property name="adb" 		location="${android.platform.tools.dir}/adb${exe}" />
+   	<property name="aidl" 		location="${android.build.tools.dir}/aidl${exe}" />
+    <property name="aapt"		location="${android.build.tools.dir}/aapt${exe}" />
+    <property name="zipalign" 	location="${android.tools.dir}/zipalign${exe}" />
+    <property name="dx" 		location="${android.build.tools.dir}/dx${bat}" />
+    <property name="zipalign" 	location="${android.tools.dir}/zipalign${exe}" />
+    <property name="lint" 		location="${android.tools.dir}/lint${exe}" />
+	<property name="jarsigner" 	location="/usr/bin/jarsigner" />
+    
+    <!-- SDK jars -->
+    <property name="android.jar.dir" value="${android.platform.dir}/android.jar" />
+    <property name="framework.aidl" location="${android.platform.dir}/framework.aidl"/>
+
+    <!-- **************************************************** -->
+    <!-- ****************** project files path ************** --> 
+    <!-- **************************************************** -->   
+    <property name="src.dir" 					value="src" />
+    <property name="src.absolute.dir" 			value="${basedir}/${src.dir}" />
+    <property name="res.dir" 					value="res" />
+    <property name="assets.dir" 				value="assets" />
+    <property name="android.manifest.xml"		value="AndroidManifest.xml" />
+    <!-- libs -->
+    <property name="jar.libs.dir" 				value="libs" />
+    <property name="jar.libs.absolute.dir" 		value="${basedir}/${jar.libs.dir}"/>
+    <property name="native.libs.absolute.dir" 	location="libs" />
+     <filelist id="jar.libs.common" dir="${jar.libs.dir}">
+        <!-- Unity -->
+        <file name="unity-classes.jar" />
+        <!-- SysFont For Unity -->
+        <file name="SysFont.jar" />
+        <!-- Tencent QQ
+        <file name="open_sdk.jar" />
+        <file name="mta-sdk-1.0.0.jar" /> -->
+        <!-- JPush -->
+        <file name="jpush-sdk-release1.6.1.jar" />
+        <!-- WeChat share
+        <file name="libammsdk.jar" /> -->
+        <!-- Umeng -->
+        <file name="umeng_sdk.jar" />
+    </filelist>
+    
+    <!-- **************************************************** -->
+    <!-- ************** Java Compilation options ************ --> 
+    <!-- **************************************************** -->
+    <property name="java.encoding" 				value="UTF-8" />
+    <property name="java.target" 				value="1.5" />
+    <property name="java.source" 				value="1.5" />
+    <property name="java.compilerargs" 			value="" />
+    <property name="java.compiler.classpath" 	value="" />
+	
+    <!-- **************************************************** -->
+    <!-- **************** referenced project  *************** --> 
+    <!-- **************************************************** -->
+	<property name="referenced.project.dir" 		value="../${referenced.project}"/>
+	<property name="referenced.project.src"	 		value="${referenced.project.dir}/src" />
+	<property name="referenced.project.res"	 		value="${referenced.project.dir}/res" />
+	<property name="referenced.project.libs" 		value="${referenced.project.dir}/libs"/>
+	<property name="referenced.project.gen"	 		value="${referenced.project.dir}/gen" />
+	<property name="referenced.project.manifest" 	value="${referenced.project.dir}/AndroidManifest.xml" />
+	
+	<property name="referenced.project_1.dir" 		value="../${referenced.project_1}"/>
+	<property name="referenced.project_1.src"	 	value="${referenced.project_1.dir}/src" />
+	<property name="referenced.project_1.res"	 	value="${referenced.project_1.dir}/res" />
+	<property name="referenced.project_1.libs" 		value="${referenced.project_1.dir}/libs"/>
+	<property name="referenced.project_1.gen"	 	value="${referenced.project_1.dir}/gen" />
+	<property name="referenced.project_1.manifest" 	value="${referenced.project_1.dir}/AndroidManifest.xml" />
+    
+    <!-- **************************************************** -->
+    <!-- ****************** out put files ******************* --> 
+    <!-- **************************************************** -->
+    <!-- out put folder for R file -->
+    <property name="out.gen.dir" 					value="gen" />
+    <property name="out.gen.absolute.dir" 			location="${basedir}/${out.gen.dir}" />
+    <property name="out.bin.dir" 					value="bin" />
+    <property name="out.classes.dir"		 		value="${out.bin.dir}/classes" />
+    <property name="out.classes.absolute.dir" 		location="${basedir}/${out.classes.dir}" />
+    <property name="out.dex.file" 					value="classes.dex" />
+    <property name="out.dex.dir" 					value="${out.bin.dir}/${out.dex.file}" />
+    <property name="out.dex.absolute.dir" 			location="${basedir}/${out.dex.dir}" />
+    <property name="out.resources.file" 			value="resources.ap_" />
+    <property name="out.resources.pkg.dir" 			value="${out.bin.dir}/${out.resources.file}" />
+    <property name="out.resources.pkg.absolute.dir" value="${basedir}/${out.resources.pkg.dir}" />
+	<!-- output apk file -->
+    <property name="out.unsigned.pkg" 				value="${out.bin.dir}/unsigned.apk" />
+    <property name="out.signed.pkg" 				value="${out.bin.dir}/signed.apk" />
+	<condition property="out.final.pkg.name" 		value="${out.apk.name}.apk" else="final_signed.apk">
+        <isset property="out.apk.name" />
+    </condition>
+    <property name="out.final.pkg" 				value="${out.bin.dir}/${out.final.pkg.name}" />
+    
+    
+    <!-- *********************************************************************************************** -->
+    <!-- ************************************* Compile temporary files ********************************* --> 
+    <!-- *********************************************************************************************** -->
+    <property name="compile.tmp.dir" location="build_tmp"/>
+	<property name="compile.src.dir" location="${compile.tmp.dir}/src" /> 
+	<property name="compile.libs.dir" location="${compile.tmp.dir}/libs" />
+	<property name="compile.manifest.xml" location="${compile.tmp.dir}/AndroidManifest.xml" /> 
+    
+    <!-- ********************************** Action Targets ********************************************* --> 
+    <target name="install">
+        <echo level="info">Installing ${out.unsigned.pkg} onto default emulator or device...</echo>
+        <exec
+            executable="${adb}"
+            failonerror="true" >
+            <arg line="" />
+            <arg value="install" />
+            <arg value="-r" />
+            <arg path="${out.final.pkg}" />
+        </exec>
+	</target>
+	
+    <target name="clean">
+        <delete dir="${out.gen.dir}" />
+        <delete dir="${out.bin.dir}" />
+        <delete dir="${compile.tmp.dir}" />
+    </target>
+	
+    <!-- *********************************************************************************************** -->
+    <!-- ************************************* Configure Compile files ********************************* --> 
+    <!-- *********************************************************************************************** -->
+    <target name="init-compile-tmp-dir">
+	    <delete dir="${compile.tmp.dir}"/>
+	    <mkdir dir="${compile.tmp.dir}"/>
+	</target>
+	<target name="init-compile-src" depends="init-compile-tmp-dir">
+        <delete dir="${compile.src.dir}" />
+        <mkdir dir="${compile.src.dir}" />
+		<property name="src.package.prefix" value="com/happiplay" />
+		<copy todir="${compile.src.dir}/${src.package.prefix}">
+			<fileset dir="${src.dir}/${src.package.prefix}" includes="*.java"/>
+		</copy>
+		
+	    <copy todir="${compile.src.dir}/${src.package.prefix}/business">
+	        <fileset dir="${src.dir}/${src.package.prefix}/business"/>
+	    </copy>
+		
+		<copy todir="${compile.src.dir}/${src.package.prefix}/tools">
+			<fileset dir="${src.dir}/${src.package.prefix}/tools" />
+		</copy>
+		
+		<!-- Base platform utlis classes -->
+		<copy todir="${compile.src.dir}/${src.package.prefix}/platform">
+		   <fileset dir="${src.dir}/${src.package.prefix}/platform" includes="*.java"/>
+		</copy>
+		<!-- target platform classes -->
+ 		<tif>
+			<issetandnotempty property="target.market.platform" />
+            <then>
+				<copy todir="${compile.src.dir}/${src.package.prefix}/platform/${target.market.platform}">
+					<fileset dir="${src.dir}/${src.package.prefix}/platform/${target.market.platform}" />
+				</copy>	
+            </then>
+		</tif>
+		<tif>
+			<issetandnotempty property="base.market.platform" />
+            <then>
+				<copy todir="${compile.src.dir}/${src.package.prefix}/platform/${base.market.platform}">
+					<fileset dir="${src.dir}/${src.package.prefix}/platform/${base.market.platform}" />
+				</copy>
+            </then>
+		</tif>
+		<!-- Web view class for unity -->
+		<copy todir="${compile.src.dir}/net/gree/unitywebview" >
+			<fileset dir="${src.dir}/net/gree/unitywebview" />
+		</copy>
+		
+		<!-- Google AIDL file -->
+		<copy todir="${compile.src.dir}/com/android/vending/billing" >
+			<fileset dir="${src.dir}/com/android/vending/billing" />
+		</copy>
+		
+		<!-- For WeChat callback data -->
+		<tif>
+			<issetandnotempty property="jar.libs.for.share" />
+            <then>
+				<copy todir="${compile.src.dir}/com/happiplay/texas/wxapi">
+					<fileset dir="${src.dir}/com/happiplay/texas/wxapi" />
+				</copy>	
+            </then>
+		</tif>
+	</target>
+	
+	<target name="init-compile-lib" depends="init-compile-tmp-dir">
+	    <delete dir="${compile.libs.dir}" />
+	    <mkdir dir="${compile.libs.dir}" />
+	    <copy todir="${compile.libs.dir}" >
+			<filelist refid="jar.libs.common" />
+		</copy>
+		<copy todir="${compile.libs.dir}">
+		    <filelist dir="${jar.libs.dir}" files="${jar.libs.target.platform}" />
+		    <filelist dir="${jar.libs.dir}" files="${jar.libs.base.platform}" />
+		    <filelist dir="${jar.libs.dir}" files="${jar.libs.for.share}" />
+		</copy>
+		<copy todir="${compile.libs.dir}" >
+			<fileset dir="${jar.libs.dir}" includes="armeabi*/" />
+		</copy>
+	</target>
+	
+	<target name="init-compile-manifest" depends="init-compile-tmp-dir">
+		<copy file="${android.manifest.xml}" todir="${compile.tmp.dir}"/>
+	</target>
+    
+    <!-- **************************************************** -->
+    <!-- **************** Check package name **************** --> 
+    <!-- **************************************************** -->
+    <target name="-reset-package-name">
+        <property name="reset.package.manifest" value="${android.manifest.xml}"/>
+        <property name="reset.package.src.dir" value="${src.dir}" />
+        <replaceregexp
+            byline="true"
+            file="${reset.package.manifest}"
+            match="@package.name"
+            replace="${package.name}"
+            />
+        <replaceregexp
+            byline="true"
+            encoding="${java.encoding}"
+            match='import (.+)\.R;'
+            replace='import ${package.name}.R;'>
+            <fileset dir="${reset.package.src.dir}">
+                <include name="**/*.java" />
+            </fileset>
+		</replaceregexp>
+    </target>
+    
+    <!-- **************************************************** -->
+    <!-- **************** Handle Channel Name *************** --> 
+    <!-- **************************************************** -->
+ 	<target name="-reset-umeng-channel-name" >
+ 	    <property name="reset.channel.manifest" value="${android.manifest.xml}"/>
+		<replaceregexp
+          byline="true"
+          encoding="${java.encoding}"
+          file="${reset.channel.manifest}"
+          match="meta-data android:value=&quot;.*&quot; android:name=&quot;UMENG_CHANNEL&quot;"
+          replace="meta-data android:value=&quot;${channel.id}&quot; android:name=&quot;UMENG_CHANNEL&quot;" />
+	</target>
+	
+	<!-- **************************************************** -->
+    <!-- **************** Set Jpush appkey ****************** --> 
+    <!-- **************************************************** -->
+ 	<target name="-reset-jpush-appkey" >
+ 	    <property name="reset.channel.manifest" value="${android.manifest.xml}"/>
+		<replaceregexp
+          byline="true"
+          encoding="${java.encoding}"
+          file="${reset.channel.manifest}"
+          match="@jpush.appkey"
+          replace="${jpush.appkey}" />
+	</target>
+    <!-- **************************************************** -->
+    <!-- ************************* init ********************* --> 
+    <!-- **************************************************** -->
+	
+    <target name="init" depends="init-compile-src, init-compile-lib, init-compile-manifest">
+        <echo> Initializing ...</echo>
+        <delete dir="${out.bin.dir}" />
+        <delete dir="${out.gen.dir}" />
+        <mkdir dir="${out.bin.dir}" />
+        <mkdir dir="${out.classes.dir}" />
+        <mkdir dir="${out.gen.dir}" />
+    </target>
+    
+    <!-- *********************************************************************************************** -->
+    <!-- ******************** Configure manifest for package name and channel id *********************** --> 
+    <!-- *********************************************************************************************** -->
+    <target name="configure-manifest" depends="init">
+        <echo> Configure package name and channel Id</echo>
+        <property name="platform.package.prefix" value="com/happiplay/platform" />
+		<tif>
+            <issetandnotempty property="target.market.platform" />
+            <then>
+				<tconfiguremanifest 
+				    srcfile="${compile.src.dir}/${platform.package.prefix}/${target.market.platform}/manifest.xml"
+				    dstfile="${compile.manifest.xml}" />
+            </then>
+		</tif>
+		<tif>
+            <issetandnotempty property="base.market.platform" />
+            <then>
+                <tconfiguremanifest 
+                    srcfile="${compile.src.dir}/${platform.package.prefix}/${base.market.platform}/manifest.xml" 
+                    dstfile="${compile.manifest.xml}" />
+            </then>
+		</tif>
+		<antcall target="-reset-package-name">
+		    <param name="reset.package.manifest" value="${compile.manifest.xml}" />
+		    <param name="reset.package.src.dir" value="${compile.src.dir}"/>
+		</antcall>
+		<antcall target="-reset-umeng-channel-name">
+		    <param name="reset.channel.manifest" value="${compile.manifest.xml}" />
+		</antcall>
+		<antcall target="-reset-jpush-appkey">
+		    <param name="reset.channel.manifest" value="${compile.manifest.xml}" />
+		</antcall>		
+    </target>
+    
+   	<!-- **************************************************** -->
+    <!-- ****************** Generate R file ***************** --> 
+    <!-- **************************************************** -->
+    <target name="gen_R" depends="configure-manifest">
+        <echo> Generatng R.java from the resources... </echo>
+        <tif>
+			<issetandnotempty property="referenced.project" />
+			<then>
+			    <tif>
+			        <issetandnotempty property="referenced.project_1" />
+			        <then>
+			            <echo message="gen_R based of referenced project and reference project_1." />
+			         	<exec executable="${aapt}" failonerror="true">
+				    		<arg value="package" />
+				    		<arg value="-m" />
+				    		<arg value="-J" />
+				    		<arg value="${out.gen.dir}" />
+				    		<arg value="-M" />
+				    		<arg value="${compile.manifest.xml}" />
+				    		<arg value="-S" />
+				    		<arg value="${res.dir}" />
+		    				<arg value="-S" />
+			    			<arg value="${referenced.project.res}" />
+		    				<arg value="-S" />
+			    			<arg value="${referenced.project_1.res}" />
+				    		<arg value="-I" />
+				    		<arg value="${android.jar.dir}" />
+				    		<arg value="--auto-add-overlay" />
+				    	</exec>
+				    	<exec executable="${aapt}" failonerror="true">
+				    		<arg value="package" />
+				    		<arg value="-m" />
+				    		<arg value="--auto-add-overlay" />
+				    		<arg value="-J" />
+				    		<arg value="${out.gen.dir}" />
+				    		<arg value="-M" />
+				    		<arg value="${referenced.project.manifest}" />
+				    		<arg value="-S" />
+				    		<arg value="${res.dir}" />
+				    		<arg value="-S" />
+				    		<arg value="${referenced.project.res}" />
+				    		<arg value="-S" />
+			    			<arg value="${referenced.project_1.res}" />
+				    		<arg value="-I" />
+				    		<arg value="${android.jar.dir}" />
+				    	</exec>
+				    	<exec executable="${aapt}" failonerror="true">
+				    		<arg value="package" />
+				    		<arg value="-m" />
+				    		<arg value="--auto-add-overlay" />
+				    		<arg value="-J" />
+				    		<arg value="${out.gen.dir}" />
+				    		<arg value="-M" />
+				    		<arg value="${referenced.project_1.manifest}" />
+				    		<arg value="-S" />
+				    		<arg value="${res.dir}" />
+				    		<arg value="-S" />
+			    			<arg value="${referenced.project.res}" />
+				    		<arg value="-S" />
+				    		<arg value="${referenced.project_1.res}" />
+				    		<arg value="-I" />
+				    		<arg value="${android.jar.dir}" />
+				    	</exec>
+				    	<copy todir="${out.gen.dir}">
+				    	    <fileset dir="${referenced.project.gen}" excludes="**/R.java" />
+				    	    <fileset dir="${referenced.project_1.gen}" excludes="**/R.java" />
+				    	</copy>
+			        </then>
+			        <else>
+						<echo message="gen_R based of referenced project." />
+				    	<exec executable="${aapt}" failonerror="true">
+				    		<arg value="package" />
+				    		<arg value="-m" />
+				    		<arg value="-J" />
+				    		<arg value="${out.gen.dir}" />
+				    		<arg value="-M" />
+				    		<arg value="${compile.manifest.xml}" />
+				    		<arg value="-S" />
+				    		<arg value="${res.dir}" />
+		    				<arg value="-S" />
+			    			<arg value="${referenced.project.res}" />
+				    		<arg value="-I" />
+				    		<arg value="${android.jar.dir}" />
+				    		<arg value="--auto-add-overlay" />
+				    	</exec>
+				    	<exec executable="${aapt}" failonerror="true">
+				    		<arg value="package" />
+				    		<arg value="-m" />
+				    		<arg value="--auto-add-overlay" />
+				    		<arg value="-J" />
+				    		<arg value="${out.gen.dir}" />
+				    		<arg value="-M" />
+				    		<arg value="${referenced.project.manifest}" />
+				    		<arg value="-S" />
+				    		<arg value="${res.dir}" />
+				    		<arg value="-S" />
+				    		<arg value="${referenced.project.res}" />
+				    		<arg value="-I" />
+				    		<arg value="${android.jar.dir}" />
+				    	</exec>
+				    	<copy todir="${out.gen.dir}">
+				    	    <fileset dir="${referenced.project.gen}" excludes="**/R.java" />
+				    	</copy>			            
+			        </else>
+			    </tif>
+			</then>
+			<else>
+			    <echo message="gen_R based without referenced project." />
+				<exec executable="${aapt}" failonerror="true">
+		    		<arg value="package" />
+		    		<arg value="-m" />
+		    		<arg value="-J" />
+		    		<arg value="${out.gen.dir}" />
+		    		<arg value="-M" />
+		    		<arg value="${compile.manifest.xml}" />
+		    		<arg value="-S" />
+		    		<arg value="${res.dir}" />
+		    		<arg value="-I" />
+		    		<arg value="${android.jar.dir}" />
+		    		<arg value="--auto-add-overlay" />
+		    	</exec>
+			</else>
+        </tif>
+    </target>
+    
+	<!-- **************************************************** -->
+    <!-- ********************** Compile ********************* --> 
+    <!-- **************************************************** -->
+    <target name="compile.aidl" depends="gen_R">
+        <echo>Compiling .aidl into java files... </echo>
+        <apply executable="${aidl}" failonerror="true">
+	        <arg value="-p${framework.aidl}" />
+	        <arg value="-I${compile.src.dir}" />
+	        <arg value="-o${out.gen.dir}" />
+	        <fileset dir="${compile.src.dir}">
+	            <include name="**/*.aidl" />
+	        </fileset>
+        </apply>
+    </target>
+    
+    <target name="compile" depends="compile.aidl">
+        <echo>Compiling java source code...</echo>
+        <tif>
+            <issetandnotempty property="referenced.project" />
+            <then>
+                <tif>
+                    <issetandnotempty property="referenced.project_1" />
+                    <then>
+		                <javac encoding="${java.encoding}"
+				            	source="${java.source}"
+				            	target="${java.target}"
+				            	debug="true" extdirs="" includeantruntime="false"
+				            	destdir="${out.classes.dir}"
+				            	bootclasspath="${android.jar.dir}">
+					        <src path="${compile.src.dir}" />
+					        <src path="${out.gen.absolute.dir}" />
+					        <src path="${referenced.project.src}" />
+					        <src path="${referenced.project_1.src}" />
+				 	        <classpath>
+				 <!-- 	            <filelist refid="jar.libs" /> -->
+					            <fileset dir="${compile.libs.dir}" includes="*.jar" />
+				 	        	<fileset dir="${referenced.project.libs}" includes="*.jar" />
+				 	        	<fileset dir="${referenced.project_1.libs}" includes="*.jar" />
+				        		<!-- <fileset dir="${referenced.project.gen}" includes="**/BuildConfig.java" /> -->
+				 	        	<!-- <fileset dir="${referenced.project.src}" includes="**/*.java" /> -->
+				 	        	<!-- For facebook -->
+					        </classpath> 
+				        </javac>	
+                    </then>
+                    <else>
+		               <javac encoding="${java.encoding}"
+				            	source="${java.source}"
+				            	target="${java.target}"
+				            	debug="true" extdirs="" includeantruntime="false"
+				            	destdir="${out.classes.dir}"
+				            	bootclasspath="${android.jar.dir}">
+					        <src path="${compile.src.dir}" />
+					        <src path="${out.gen.absolute.dir}" />
+					        <src path="${referenced.project.src}" />
+				 	        <classpath>
+				 <!-- 	            <filelist refid="jar.libs" /> -->
+					            <fileset dir="${compile.libs.dir}" includes="*.jar" />
+				 	        	<fileset dir="${referenced.project.libs}" includes="*.jar" />
+				        		<!-- <fileset dir="${referenced.project.gen}" includes="**/BuildConfig.java" /> -->
+				 	        	<!-- <fileset dir="${referenced.project.src}" includes="**/*.java" /> -->
+				 	        	<!-- For facebook -->
+					        </classpath> 
+				        </javac>	  
+                    </else>
+                </tif>
+            </then>
+            <else>
+				<javac encoding="${java.encoding}"
+		            	source="${java.source}"
+		            	target="${java.target}"
+		            	debug="true" extdirs="" includeantruntime="false"
+		            	destdir="${out.classes.dir}"
+		            	bootclasspath="${android.jar.dir}">
+			        <src path="${compile.src.dir}" />
+			        <src path="${out.gen.absolute.dir}" />
+		 	        <classpath>
+			            <fileset dir="${compile.libs.dir}" includes="*.jar" />
+			        </classpath> 
+		        </javac>
+            </else>
+        </tif>
+    </target>
+    
+   	<!-- **************************************************** -->
+    <!-- ********** class and resources package ************* --> 
+    <!-- **************************************************** -->
+    <target name="dex" depends="compile">
+        <echo> Converting compiled class files and external libraries into a .dex file... </echo>
+        <tif>
+            <issetandnotempty property="referenced.project" />
+            <then>
+                <tif>
+                    <issetandnotempty property="referenced.project_1" />
+                    <then>
+                       	<exec executable="${dx}" failonerror="true">
+				            <arg value="--dex" />
+				            <!-- Output dir -->
+				            <arg value="--output=${out.dex.dir}" />
+				            <arg value="${out.classes.dir}" />
+				            <arg value="${compile.libs.dir}" />
+				        	<arg value="${referenced.project.libs}" />
+				        	<arg value="${referenced.project.src}" />
+			        		<arg value="${referenced.project_1.libs}" />
+				        	<arg value="${referenced.project_1.src}" />
+				        </exec>
+                    </then>
+                    <else>
+                      	<exec executable="${dx}" failonerror="true">
+				            <arg value="--dex" />
+				            <!-- Output dir -->
+				            <arg value="--output=${out.dex.dir}" />
+				            <arg value="${out.classes.dir}" />
+				            <arg value="${compile.libs.dir}" />
+				        	<arg value="${referenced.project.libs}" />
+				        	<arg value="${referenced.project.src}" />
+				        </exec>  
+                    </else>
+                </tif>
+            </then>
+            <else>
+				<exec executable="${dx}" failonerror="true">
+		            <arg value="--dex" />
+		            <!-- Output dir -->
+		            <arg value="--output=${out.dex.dir}" />
+		            <arg value="${out.classes.dir}" />
+		            <arg value="${compile.libs.dir}" />
+		        </exec>
+            </else>
+        </tif>
+    </target>
+    
+    <!-- Package resource and assets -->
+    <target name="package.resources">
+        <echo> Packaging resources and assets... </echo>
+        <tif>
+            <issetandnotempty property="referenced.project" />
+            <then>
+                <tif>
+                    <issetandnotempty property="referenced.project_1" />
+                    <then>
+                        <exec executable="${aapt}" failonerror="true">
+				            <arg value="package" />
+				            <arg value="-f" />
+				            <arg value="-M" />
+				            <arg value="${compile.manifest.xml}" />
+				            <arg value="-S" />
+				            <arg value="${res.dir}" />
+							<arg value="-S" />
+				   			<arg value="${referenced.project.res}" />
+			   				<arg value="-S" />
+				   			<arg value="${referenced.project_1.res}" />
+							<arg value="-A" />
+							<arg value="${assets.dir}" />
+				            <arg value="-I" />
+				            <arg value="${android.jar.dir}" />
+				            <arg value="-F" />
+				            <arg value="${out.resources.pkg.dir}" />
+				        	<arg value="--auto-add-overlay" />
+				        </exec>
+                    </then>
+                    <else>
+                      	<exec executable="${aapt}" failonerror="true">
+				            <arg value="package" />
+				            <arg value="-f" />
+				            <arg value="-M" />
+				            <arg value="${compile.manifest.xml}" />
+				            <arg value="-S" />
+				            <arg value="${res.dir}" />
+							<arg value="-S" />
+				   			<arg value="${referenced.project.res}" />
+							<arg value="-A" />
+							<arg value="${assets.dir}" />
+				            <arg value="-I" />
+				            <arg value="${android.jar.dir}" />
+				            <arg value="-F" />
+				            <arg value="${out.resources.pkg.dir}" />
+				        	<arg value="--auto-add-overlay" />
+				        </exec>  
+                    </else>
+                </tif>
+            </then>
+            <else>
+                <exec executable="${aapt}" failonerror="true">
+		            <arg value="package" />
+		            <arg value="-f" />
+		            <arg value="-M" />
+		            <arg value="${compile.manifest.xml}" />
+		            <arg value="-S" />
+		            <arg value="${res.dir}" />
+					<arg value="-A" />
+					<arg value="${assets.dir}" />
+		            <arg value="-I" />
+		            <arg value="${android.jar.dir}" />
+		            <arg value="-F" />
+		            <arg value="${out.resources.pkg.dir}" />
+		        	<arg value="--auto-add-overlay" />
+		        </exec>
+            </else>
+        </tif>
+    </target>
+    
+    
+   	<!-- **************************************************** -->
+    <!-- ****************** Generate APK ******************** --> 
+    <!-- **************************************************** -->
+    <path id="android.antlibs" >
+        <pathelement path="${android.tools.dir}/lib/ant-tasks.jar" />
+    </path>
+
+	<!-- Custom tasks -->
+	<taskdef resource="anttasks.properties" classpathref="android.antlibs" />
+    
+    <!-- Generate unsigned apk -->
+    <target name="package_unsigned_apk" depends="dex, package.resources">
+       	<echo>Packaging unsigned apk for release...</echo>
+       	<echo message="${out.resources.pkg.dir}" />
+		<apkbuilder
+		        outfolder="${out.bin.dir}"
+		        resourcefile="${out.resources.file}"
+		        apkfilepath="${out.unsigned.pkg}">
+		    <dex path="${out.dex.dir}"/>
+		    <sourcefolder path="${src.absolute.dir}"/>
+		    <nativefolder path="${native.libs.absolute.dir}" />
+		</apkbuilder>
+        <echo>It will need to be signed with jarsigner before being published.</echo>
+    </target>
+	
+    <!-- **************************************************** -->
+    <!-- ************************ Signe ********************* --> 
+    <!-- **************************************************** -->
+    <target name="jarsigner" depends="package_unsigned_apk">
+        <echo>Packaging signed apk for release...</echo>
+        <signapk
+            alias="${keystore.alias}"
+            input="${out.unsigned.pkg}"
+            keypass="${keystore.password}"
+            keystore="${keystore.file}"
+            output="${out.signed.pkg}"
+            storepass="${keystore.password}" />
+    </target>
+    
+    <target name="zipalign" depends="jarsigner">  
+        <exec executable="${zipalign}" failonerror="true">  
+            <arg value="-v" />  
+            <arg value="-f" />  
+            <arg value="4" />  
+            <arg value="${out.signed.pkg}" />  
+            <arg value="${out.final.pkg}" />  
+        </exec>  
+    </target> 
+
+    <target name="release" depends="zipalign">
+        <delete file="${out.unsigned.pkg}"/>
+        <delete file="${out.signed.pkg}"/>
+    	<!-- <delete dir="${compile.tmp.dir}" /> -->
+        <echo>APK is released.</echo>
+    </target>
+</project>

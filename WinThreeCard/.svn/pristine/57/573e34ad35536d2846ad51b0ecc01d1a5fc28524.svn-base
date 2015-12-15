@@ -1,0 +1,118 @@
+package com.happiplay.platform.tencent;
+
+import java.io.ByteArrayOutputStream;
+
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Bundle;
+import android.util.Log;
+
+import com.happiplay.tools.BuildUtils;
+import com.happiplay.tools.ShareResult;
+import com.happiplay.tools.ShareTools;
+import com.happiplay.tools.ShareTools.AppShareInfo;
+import com.starcloudcasino.winthree.R;
+import com.tencent.mm.sdk.openapi.BaseReq;
+import com.tencent.mm.sdk.openapi.BaseResp;
+import com.tencent.mm.sdk.openapi.IWXAPI;
+import com.tencent.mm.sdk.openapi.IWXAPIEventHandler;
+import com.tencent.mm.sdk.openapi.SendMessageToWX;
+import com.tencent.mm.sdk.openapi.WXAPIFactory;
+import com.tencent.mm.sdk.openapi.WXMediaMessage;
+import com.tencent.mm.sdk.openapi.WXWebpageObject;
+
+public class WeChatOperator extends Activity implements IWXAPIEventHandler{
+	private static String LOG_TAG = "WeiChatOperator";
+	private static IWXAPI mIWXApi = null;
+//	private static final String WECHAT_APP_ID = "wx144f290aff2d8da7";
+//	private static final String WECHAT_APP_ID = "wx540895474c4184d3";
+	private static final int TIMELINE_SUPPORTED_VERSION = 0x21020001;
+	
+	public static void shareToWechat(AppShareInfo shareInfo, Context context, boolean toFriend) {
+		final String WECHAT_APPID = BuildUtils.getGameAppInfo().getWeChatAppId();
+		Log.d(LOG_TAG, "Wechat sharing , to friend ?" + toFriend + ", wechat appid:" + WECHAT_APPID);
+		if (mIWXApi == null) {
+			mIWXApi = WXAPIFactory.createWXAPI(context, WECHAT_APPID, true);
+	        mIWXApi.registerApp(WECHAT_APPID);
+		}
+		
+        WXWebpageObject webpage = new WXWebpageObject();
+        webpage.webpageUrl = shareInfo.target_url;
+        
+        WXMediaMessage msg = new WXMediaMessage(webpage);
+        msg.title = shareInfo.title;
+        msg.description = shareInfo.summary;
+        Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.wxmm);
+        
+        // The final size of byte[] set into thumbData should be < 32kb
+        // So we need scale the bitmap here
+        // TODO : 140 may be a magic number, need to optimize
+        Bitmap thumbBmp = Bitmap.createScaledBitmap(bmp, 140, 140, true);
+        bmp.recycle();
+        byte[] bytes = bmpToByteArray(thumbBmp, true);
+        thumbBmp.recycle();
+		msg.thumbData = bytes;
+		Log.d(LOG_TAG, "thumbData " + bytes.length);
+
+        SendMessageToWX.Req req = new SendMessageToWX.Req();
+        req.transaction = String.valueOf(System.currentTimeMillis());
+        req.message = msg;
+		req.scene = toFriend ? SendMessageToWX.Req.WXSceneSession
+				: SendMessageToWX.Req.WXSceneTimeline;
+
+        if(mIWXApi.isWXAppInstalled() && mIWXApi.isWXAppSupportAPI()){
+            int wxSdkVersion = mIWXApi.getWXAppSupportAPI();
+            if(wxSdkVersion > TIMELINE_SUPPORTED_VERSION) {
+                boolean isSend = mIWXApi.sendReq(req);
+                Log.d(LOG_TAG, "Is Shared ? " + isSend);
+            }
+        }
+	}
+	
+	
+	public static IWXAPI getWXApiInstance() {
+		return mIWXApi;
+	}
+	
+    
+	private static byte[] bmpToByteArray(final Bitmap bmp, final boolean needRecycle) {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, output);
+        if (needRecycle) {
+            bmp.recycle();
+        }
+        byte[] result = output.toByteArray();
+        try {
+            output.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+	
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		Log.d(LOG_TAG, "onCreate()");
+		WeChatOperator.getWXApiInstance().handleIntent(getIntent(), this);
+		super.onCreate(savedInstanceState);
+	}
+
+	public void onReq(BaseReq req) {
+		Log.d(LOG_TAG, "on share request:");
+	}
+	
+	/* WeChat Share Call back */
+	public void onResp(BaseResp resp) {
+		Log.d(LOG_TAG, "on share response:" + resp.errCode);
+		if (resp.errCode == BaseResp.ErrCode.ERR_OK) {
+			ShareTools.sendShareCallbackMsg(ShareResult.RESULT_SUCCESS);
+		} else if (resp.errCode == BaseResp.ErrCode.ERR_USER_CANCEL) {
+			ShareTools.sendShareCallbackMsg(ShareResult.RESULT_CANCELED);
+		} else {
+			ShareTools.sendShareCallbackMsg(ShareResult.RESULT_FAILED, resp.errStr);
+		}
+		finish();
+	}
+}

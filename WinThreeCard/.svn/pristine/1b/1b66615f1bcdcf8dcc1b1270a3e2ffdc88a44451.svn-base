@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+ 	<Button
+ 	    android:id="@+id/test_btn_login"
+ 	    android:layout_width="wrap_content"
+ 	    android:layout_height="wrap_content"
+ 	    android:text="platform login"
+ 	    />
+ 	<Button 
+ 	    android:id="@+id/test_btn_share"
+ 	    android:layout_width="wrap_content"
+ 	    android:layout_height="wrap_content"
+ 	    android:text="shareTo WeChat"/>
+ 	<Button 
+ 	    android:id="@+id/test_btn_launch"
+ 	    android:layout_width="wrap_content"
+ 	    android:layout_height="wrap_content"
+ 	    android:text="launch WeChat"/>
+ 	
+ 	<Button 
+ 	    android:id="@+id/test_btn_ShareTo_QQZone"
+ 	    android:layout_width="wrap_content"
+ 	    android:layout_height="wrap_content"
+ 	    android:text="Share To QQZone"/>
+ 	
+	<Button 
+ 	    android:id="@+id/test_btn_ShareTo_QQ_Weibo"
+ 	    android:layout_width="wrap_content"
+ 	    android:layout_height="wrap_content"
+ 	    android:text="Share To Tencent Weibo"/>
+ 	
+ 	<Button 
+ 	    android:id="@+id/test_btn_ShareTo_Douban"
+ 	    android:layout_width="wrap_content"
+ 	    android:layout_height="wrap_content"
+ 	    android:text="Share To Douban"/>
+ 	
+ 	<Button 
+ 	    android:id="@+id/test_btn_test_web"
+ 	    android:layout_width="wrap_content"
+ 	    android:layout_height="wrap_content"
+ 	    android:text="活动"/>
+
+</LinearLayout>

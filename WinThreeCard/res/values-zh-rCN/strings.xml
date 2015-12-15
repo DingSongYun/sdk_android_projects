@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">星云赢三张</string>
+
+    <string name="dialogtitle_loading">网络数据</string>
+    <string name="dialogcontent_waitting_up">正在上传数据......</string>
+	<string name="upload_avatar_successed"> 上傳成功！</string>
+	<string name="upload_avatar_failed"> 头像上传失败！</string>
+	<string name="upload_avatar_failed_data"> 未得到有效上傳圖像數據！</string>
+    <string name="upload_avatar_failed_user"> 驗證用戶失敗！</string>
+	<string name="upload_avatar_cancelled">头像上传已被取消</string>
+	
+	<string name="share_to_wechat_description">女神代言，风靡欧美的德州扑克是当前全球最热门的扑克游戏，以其易学难精的特点在世界上吸引并凝聚了大量玩家。</string>
+	<string name="share_successed">分享成功</string>
+	<string name="share_failed">分享失败, 请稍后重试</string>
+	
+    <string name="pay_suc">支付成功。</string>
+    <string name="pay_failed">支付失敗。</string>
+    <string name="pay_user_cancel">支付已取消。</string>
+	<string name="processing_payment">正在支付</string>
+	
+	<string name="login_time_out">登陆失败，请检查您的网络状况。</string>
+	<string name="login_failed"> 登陆失败。</string>
+	
+	<!-- For SMS Payment -->
+    <string name="OK">确定</string>
+    <string name="Cancel">取消</string>
+    <string name="notice">提示</string>
+    <string name="sms_notice_message">游戏将发送短信用于购买商品，请点击确定按钮。</string>
+    <string name="sms_send_ok">短信已发,请注意查看邮件(可能会有一定的延迟).</string>
+    <string name="sms_pay_hint">金币在邮件附件里\n请注意查收</string>
+    <string name="sms_unavailable">SIM卡不可用。</string>
+    
+    <!-- For AliPay -->
+    <string name="confirm_install_hint">安装提示</string>
+    <string name="confirm_install">为保证您的交易安全，需要您安装支付宝安全支付服务，才能进行付款。\n\n点击确定，立即安装。</string>
+    <string name="check_sign_hint">提示</string>
+    <string name="check_sign_failed">您的订单信息已被非法篡改。</string>
+    <string name="app_ver_under_checking">正在检测安全支付服务版本</string>
+    <string name="title_activity_mj_pay_home">MjPayHome</string>
+    <string name="remote_call_failed">Failure calling remote service</string>
+    <string name="title_activity_sina_login">SinaLogin</string>
+    <string name="title_activity_fpanel_login_qq">FPanelLoginQQ</string>
+    
+    <string name="device_not_support_google_billing"> 您的手机暂不支持谷歌支付，请检查手机配置.</string>
+    
+    <!-- Choose Avatar -->
+	<string name="select_photo">选择头像</string>
+    <string name="take_photo">拍摄</string>
+    <string name="pick_photo">从相册中选取</string>
+    <string name="pick_error">未找到有效的外部存储!</string>
+    
+    <string name="facebook_app_id">337070366339665</string>
+
+    <string name="choose_send_email_app">发送邮件</string>
+</resources>

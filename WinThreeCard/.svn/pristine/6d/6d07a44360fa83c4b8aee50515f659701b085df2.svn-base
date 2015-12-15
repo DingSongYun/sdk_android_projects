@@ -1,0 +1,18 @@
+<!-- Add Configuration for FaceBook SDK : Start -->
+	<!-- Add Facebook appId here -->
+	<meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
+	<!-- Configuration for Login Activity -->
+    <activity android:name="com.facebook.LoginActivity"
+             android:theme="@android:style/Theme.Dialog"
+             android:label="@string/app_name" />
+   	<activity android:name=".LoginUsingLoginFragmentActivity"/>
+<!-- Add Configuration for FaceBook SDK : End -->
+
+
+<receiver android:name="com.mobileapptracker.Tracker" android:exported="true">
+        <intent-filter>
+            <action android:name="com.android.vending.INSTALL_REFERRER" />
+        </intent-filter>
+</receiver>
+<meta-data android:name="com.google.android.gms.version"
+           android:value="@integer/google_play_services_version" />
