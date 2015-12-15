@@ -89,11 +89,9 @@ public class Constants {
 		public static final String MSG_EMAIL_FOR_GOODS = "email_for_goods";
 	}
 	
-	public class PaymentConfirmKey{
-		public static final String USER_ID = "user_id";
-		public static final String ORDER_ID = "order_id";
-		public static final String PRODUCT_ID = "product_id";
-		public static final String PRICE = "price";
+	public class PurchaseFinishKey {
+		public static final String PURCHASE_RESULT = "result";
+		public static final String PRODUCT_ID = "productId";
 	}
 	
 	/**
