@@ -1,8 +1,18 @@
 package com.gplus.googleplay;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.net.Uri;
 import android.util.Log;
 
 import com.gplus.googleplay.GooglePlayBillingOperator.PurchaseListener;
@@ -15,7 +25,7 @@ public class ExternalInterface {
 	private final static String EXTERMAL_AGENT = "ExternalInterface";
 	private final static String UNITY_CALL_BACK_PAY = "OnPurchaseProduct";
 	
-	public ExternalInterface instance = new ExternalInterface();
+	public static ExternalInterface instance = new ExternalInterface();
 	
 	private ExternalInterface () {}
 	
@@ -44,5 +54,64 @@ public class ExternalInterface {
 	
 	public void CallUnity (String method, String data) {
 		UnityPlayer.UnitySendMessage(EXTERMAL_AGENT, method, data);
+	}
+	
+	public boolean checkApplication(String packageName) {
+		Log.d("Restaurant", "checkApplication: " + packageName);
+		  if (packageName == null || "".equals(packageName)){
+		      return false;
+		  }
+		  try {
+		      ApplicationInfo info = StartActivity.instance.getPackageManager()
+		    		  .getApplicationInfo(packageName, PackageManager.GET_UNINSTALLED_PACKAGES);
+		      if (info != null) {
+		    	  Log.d("Restaurant", "checkApplication => Exist Package" );
+		    	  return true;
+		      }
+
+		  } catch (NameNotFoundException e) {
+			  Log.d("Restaurant", "checkApplication => No Package" );
+		      return false;
+		  }
+		  
+		  return false;
+	}
+	
+	public void shareToFacebook (String text, String imagePath) {
+		imagePath = imagePath + ".png";
+		Log.e("Restaurant", "Share To Facebook => " + text + "|" + imagePath);
+		String[] tmpStrs = imagePath.split("/");
+		imagePath = tmpStrs [tmpStrs.length - 2] + "/" + tmpStrs[tmpStrs.length - 1];
+				
+		Intent intent = new Intent ();
+		intent.setAction(Intent.ACTION_SEND);
+		intent.setPackage("com.facebook.katana");
+		intent.setType("image/png");
+		
+		File file = new File (StartActivity.instance.getFilesDir(), "shareImage.png");
+
+        try {
+        	file.createNewFile();
+        	
+			InputStream rawFileStream = StartActivity.instance.getAssets().open(imagePath);
+			FileOutputStream fileStream = new FileOutputStream(file, false);
+			byte[] bt = new byte[1024];
+            int len = -1;
+            while((len = rawFileStream.read(bt)) != -1){
+            	fileStream.write(bt, 0, len);
+            }
+            
+            fileStream.flush();
+            
+            rawFileStream.close();
+            fileStream.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        Log.e("Restaurant", file.length() + "|" + file.getAbsolutePath() + "|" + imagePath);
+		intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+		
+		StartActivity.instance.startActivity(intent);
 	}
 }
