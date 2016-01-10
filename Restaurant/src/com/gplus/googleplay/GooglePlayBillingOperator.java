@@ -68,6 +68,7 @@ public class GooglePlayBillingOperator extends Handler {
 	private PurchaseListener mPurchaseListener = null;
 	
 	public GooglePlayBillingOperator(Context context/*, OpenSDKOperator operator*/) {
+		super ();
 		mContext = context;
 		mIabHelper = new IabHelper(context, Base64EncodedPublicKey);
 //		mOperator = operator;
@@ -84,9 +85,9 @@ public class GooglePlayBillingOperator extends Handler {
 				@Override
 				public void onIabSetupFinished(IabResult result) {
 					if (!result.isSuccess()) {
-						Log.d(LOG_TAG, "Problem setting up In-app Billing: " + result);
+						Log.e(LOG_TAG, "Problem setting up In-app Billing: " + result);
 	 				} else {
-	 					Log.d(LOG_TAG, "Set up seccess.");
+	 					Log.e(LOG_TAG, "Set up seccess.");
 						mIsIabSetup = true;
 	 				}
 					mIsSetupIabFinished = true;
@@ -95,10 +96,12 @@ public class GooglePlayBillingOperator extends Handler {
 						handler.removeMessages(MSG_DELAY_EXEC_LOAD_INVENTORY_UNTIL_IAB_ALREADY);
 						handler.sendEmptyMessage(MSG_DELAY_EXEC_LOAD_INVENTORY_UNTIL_IAB_ALREADY);
 					}
-					
+					else
 					if (handler.hasMessages(MSG_DELAY_EXEC_PURCASE_UNTIL_IAB_ALREADY)) {
 						handler.removeMessages(MSG_DELAY_EXEC_PURCASE_UNTIL_IAB_ALREADY);
 						handler.sendEmptyMessage(MSG_DELAY_EXEC_PURCASE_UNTIL_IAB_ALREADY);
+					} else {
+						//handler.sendEmptyMessage(MSG_DELAY_EXEC_LOAD_INVENTORY_UNTIL_IAB_ALREADY);
 					}
 				}}
 			);
@@ -113,6 +116,7 @@ public class GooglePlayBillingOperator extends Handler {
 //		getProductList();
 		CommonTools.showProgress(mContext, ProgressDialog.STYLE_SPINNER);
 		mPayInfo = payInfo;
+		Log.e(LOG_TAG, "GooglePlayBillingOperator: " + mIsSetupIabFinished);
 		if (mIsSetupIabFinished) {
 			sendEmptyMessage(MSG_POST_EXEC_PURCHASE);
 		} else {
@@ -121,7 +125,7 @@ public class GooglePlayBillingOperator extends Handler {
 	}
 	
 	public void getProducts() {
-		Log.d(LOG_TAG, "internl get products.");
+		Log.e(LOG_TAG, "internl get products.");
 		
 	}
 	
@@ -134,7 +138,7 @@ public class GooglePlayBillingOperator extends Handler {
 	}
 	
 	public void checkInventory(int cbId, String data) {
-		Log.d(LOG_TAG, "checkInventory: " + data);
+		Log.e(LOG_TAG, "checkInventory: " + data);
 		mInventoryCheckingCbId = cbId;
 		if (mCacheServerGoods == null) {
 			mCacheServerGoods = new ArrayList<JSONObject>();
@@ -165,12 +169,36 @@ public class GooglePlayBillingOperator extends Handler {
 		}
 	}
 	
+	public void checkInventory (String data) {
+		Log.e(LOG_TAG, "checkInventory: " + data);
+		if (TextUtils.isEmpty(data))
+			return ;
+		
+		try {
+			JSONObject jsonData = new JSONObject(data);
+			JSONArray goodIdsData = jsonData.getJSONArray("productIds");
+			for (int i = 0; i < goodIdsData.length(); i++) {
+				String id = goodIdsData.getString(i);
+				
+				if (!TextUtils.isEmpty(id)) {
+					mSkuList.add(id);
+				}
+				
+				loadInventory();
+				sendEmptyMessageDelayed(MSG_DELAY_CHECK_INVENTORY, DELAY_TIME);
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	private void delayCheckInventory() {
-		Log.d(LOG_TAG, "delay check inventory.");
+		/*
+		Log.e(LOG_TAG, "delay check inventory.");
 		JSONObject resultData = new JSONObject();
 		try {
 			if (mInventory == null) {
-				Log.d(LOG_TAG, "Empty inventory");
+				Log.e(LOG_TAG, "Empty inventory");
 				resultData.put(CommonKey.STATUS, 0);
 				//ExternalCall.instance.callUnity(mInventoryCheckingCbId, resultData.toString());
 				return ;
@@ -221,7 +249,7 @@ public class GooglePlayBillingOperator extends Handler {
 						}
 						
 						if (purePrice == 0.0f) {
-							Log.d(LOG_TAG, "Can not parse avaliable price.(Src Price String:" + priceStr +")");
+							Log.e(LOG_TAG, "Can not parse avaliable price.(Src Price String:" + priceStr +")");
 //							throw new Exception("Can not parse avaliable price.(Src Price String:" + priceStr +")");
 						}
 					}
@@ -247,19 +275,23 @@ public class GooglePlayBillingOperator extends Handler {
 			e.printStackTrace();
 			//ExternalCall.instance.callUnity(mInventoryCheckingCbId, "");
 		}
-		
+		*/
 	}
 	
 	private void internalPay() {
-		Log.d(LOG_TAG, "internal pay =>" + mPayInfo.getProductId());
+		Log.e(LOG_TAG, "internal pay =>" + mPayInfo.getProductId());
 		if (mIabHelper.isAsyncInProgress()) {
 			GooglePlayBillingOperator.this.sendEmptyMessage(MSG_DISMISS_PROGRESS);
-			Log.d(LOG_TAG, "Abort this operation, Other async is processing");
+			Log.e(LOG_TAG, "Abort this operation, Other async is processing");
 			return ;
 		}
 		
 		if (mInventory == null) {
 			GooglePlayBillingOperator.this.sendEmptyMessage(MSG_DISMISS_PROGRESS);
+			
+			if (mPurchaseListener != null)
+				mPurchaseListener.OnPurchase(false);
+			
 			return ;
 		}
 		mIabHelper.launchPurchaseFlow((Activity) mContext,
@@ -270,7 +302,7 @@ public class GooglePlayBillingOperator extends Handler {
 					public void onIabPurchaseFinished(IabResult result,
 							final Purchase info) {
 						int response = result.getResponse();
-						Log.d(LOG_TAG, "Purchase finish. success?:" + result.isSuccess());
+						Log.e(LOG_TAG, "Purchase finish. success?:" + result.isSuccess());
 						if (result.isFailure()) {
 							Log.e(LOG_TAG, "Error when purchasing:" + result.toString());
 							if (response == IabHelper.BILLING_RESPONSE_RESULT_USER_CANCELED) {
@@ -313,7 +345,7 @@ public class GooglePlayBillingOperator extends Handler {
 													public void onConsumeFinished(
 															Purchase purchase,
 															IabResult result) {
-														Log.d(LOG_TAG, "Consume Finished.");
+														Log.e(LOG_TAG, "Consume Finished.");
 														GooglePlayBillingOperator.this.sendEmptyMessage(MSG_DISMISS_PROGRESS);
 														if (mPurchaseListener != null)
 															mPurchaseListener.OnPurchase(true);
@@ -352,16 +384,18 @@ public class GooglePlayBillingOperator extends Handler {
 	}
 	
 	public void onPurchaseActivityOnResult(final int requestCode, final int resultCode, final Intent data) {
-		Log.d(LOG_TAG, "google purchase activity on result.");
-		new Thread(new Runnable() {
-
-			public void run() {
-				if (!mIabHelper.handleActivityResult(requestCode, resultCode, data)) {
-				} else {
-					Log.d(LOG_TAG, "onActivityResult handled by IABUtil.");
+		Log.e(LOG_TAG, "google purchase activity on result => " + requestCode + "|" + resultCode);
+		if (requestCode == GOOGLE_PURCHASE_REQUEST_CODE) {
+			new Thread(new Runnable() {
+	
+				public void run() {
+					if (!mIabHelper.handleActivityResult(requestCode, resultCode, data)) {
+					} else {
+						Log.e(LOG_TAG, "onActivityResult handled by IABUtil.");
+					}
 				}
-			}
-		}).start();
+			}).start();
+		}
 	}
 	
 	/**
@@ -375,9 +409,9 @@ public class GooglePlayBillingOperator extends Handler {
 	}
 	
 	public void queryInventory() {
-		Log.d(LOG_TAG, "queryInventory.");
+		Log.e(LOG_TAG, "queryInventory.");
 		if (mIabHelper.isAsyncInProgress()) {
-			Log.d(LOG_TAG, "Abort this operation, Other async is processing");
+			Log.e(LOG_TAG, "Abort this operation, Other async is processing");
 			return ;
 		}
 		try {
@@ -385,12 +419,12 @@ public class GooglePlayBillingOperator extends Handler {
 				
 				@Override
 				public void onQueryInventoryFinished(IabResult result, Inventory inv) {
-					Log.d(LOG_TAG, "query inventory finished:" + result.toString());
+					Log.e(LOG_TAG, "query inventory finished:" + result.toString());
 					if (result.isSuccess()) {
 						mInventory = inv;
-						Log.d(LOG_TAG, "Get Inventory Succeed");
+						Log.e(LOG_TAG, "Get Inventory Succeed");
 						if (mInventory == null) {
-							Log.d(LOG_TAG, "inventory is null.");
+							Log.e(LOG_TAG, "inventory is null.");
 						}						
 					}
 					
@@ -428,12 +462,12 @@ public class GooglePlayBillingOperator extends Handler {
 	}
 
 	public void failedSetupIab() {
-		Log.d(LOG_TAG, "failed setup iab.");
+		Log.e(LOG_TAG, "failed setup iab.");
 		CommonTools.dismissProgress();
 	}
 	
 	public void handleMessage(Message msg) {
-		Log.d(LOG_TAG, "handler message:" + msg.what);
+		Log.e(LOG_TAG, "handler message:" + msg.what);
 		switch(msg.what) {
 		case MSG_POST_EXEC_LOAD_INVENTORY:
 			if (mIsIabSetup) {

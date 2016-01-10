@@ -1,6 +1,7 @@
 package com.gplusplus.nekores;
 
 import android.app.NativeActivity;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
@@ -94,5 +95,11 @@ public class StartActivity extends NativeActivity
 	
 	public GooglePlayBillingOperator GetPayOperator () {
 		return mPayOperator;
+	}
+	
+	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		if (mPayOperator != null) {
+			mPayOperator.onPurchaseActivityOnResult(requestCode, resultCode, intent);
+		}
 	}
 }
