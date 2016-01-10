@@ -136,19 +136,20 @@ public class ExternalInterface {
 	}
 	
 	public void shareToTwitter (String text, String imagePath) {
-		imagePath = imagePath + ".png";
-		Log.e("Restaurant", "Share To Facebook => " + text + "|" + imagePath);
-		String[] tmpStrs = imagePath.split("/");
-		imagePath = tmpStrs [tmpStrs.length - 2] + "/" + tmpStrs[tmpStrs.length - 1];
-				
+		Log.e("Restaurant", "Share To Twitter => " + text + "|" + imagePath);
+
 		Intent intent = new Intent ();
 		intent.setAction(Intent.ACTION_SEND);
 		intent.setPackage("com.twitter.android");
 		
 		if (TextUtils.isEmpty(imagePath)) {
-			intent.setType("image/png");
+			intent.setType("text/plain");
 			intent.putExtra(Intent.EXTRA_TEXT, text);
 		} else {
+			imagePath = imagePath + ".png";
+			String[] tmpStrs = imagePath.split("/");
+			imagePath = tmpStrs [tmpStrs.length - 2] + "/" + tmpStrs[tmpStrs.length - 1];
+			
 			intent.setType("image/png");
 			intent.putExtra (Intent.EXTRA_TEXT, text);
 			File file = new File (TMP_SHARE_IMAGE_PATH, "shareImage.png");
