@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="jp.co.tamtam.nekomeshiya"
     android:installLocation="internalOnly"
-    android:versionCode="4"
-    android:versionName="1.3" >
+    android:versionCode="5"
+    android:versionName="1.4" >
 
     <!-- TODO: Replace the 'package' value above to reflect your app's package id. -->
     <!-- NOTE: Adjust minSDKVersion and targetSdkVersion as desired. -->
