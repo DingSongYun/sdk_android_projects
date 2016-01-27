@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">Restaurant</string>
+  <string name="app_name">ねこめし屋</string>
   <string name="dialogtitle_loading">Loading...</string>
   <string name="pay_user_cancel">Cancel</string>
   <string name="device_not_support_google_billing">Devices not support</string>

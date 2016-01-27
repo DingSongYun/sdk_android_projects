@@ -1,6 +1,6 @@
 package com.gplus.googleplay.util;
 
-import jp.co.tamtam.nekomeshiya.R;
+import jp.tamtam.nekomeshiya.R;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.drawable.AnimationDrawable;

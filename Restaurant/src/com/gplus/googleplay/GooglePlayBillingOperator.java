@@ -1,16 +1,10 @@
 package com.gplus.googleplay;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Currency;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import jp.co.tamtam.nekomeshiya.R;
+import jp.tamtam.nekomeshiya.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,7 +33,7 @@ import com.gplus.googleplay.util.SkuDetails;
 public class GooglePlayBillingOperator extends Handler {
 	public static final String LOG_TAG = "GooglePlayBillingOperator";
 	
-	private static final String Base64EncodedPublicKey="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApKvFbHXj7dGiYUFc7aCNS9hViFrvUAe+6W3iF9vzQYr5z/uMqcXZGmMjMRwAE6Tw7S8EYAh3CA9y+x7xOtJShfsNh5aix1HbVADY3cbI+eiyKvkmNjqAuE6uEY2AM6Khx11EJgv0mpGJg9CKxTpUaL5zC1iLqI4nfy2ApDlo6KpR1Y1dI79TDw5SXfbzCsYhaHfK75O6ni6uCjfmFup/6rLpNPAWL+5ZBjbcHmHjl9pGJ80T95tDujzyWB2uxLoJkuRVBchqA1hXB1WKfYUbl4smnCuMbLRje6YX9TNjLXDg6BzQwGeT8YbvZlgHU1/Q9uE0EMrbl8+k6rR86S7aBQIDAQAB";
+	private static final String Base64EncodedPublicKey="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArhqhFW6SxeBvw9a8KvTabIrJPRzhwrPgbFGCPBy+0gio5x4yCLGAML6MhcAuF9DeRH5zn7fEyNfOZyXWrMK0nLCNsFUcRJRh6KKCQkAtllo/WJuID5IA8TlNfqoJ2HGu2Jx81sN+ki4fwPay1WdYLM5s7cXQQhxhWdMRKVXk96s7HG8vpofkPsdqJTGZomfEPItETsPAva4LspFw1I/LfMDpgciTvGBUnz/lKjD6BFNV44EUPh+QCxFqqwTfkoRfARgGf9+Eli8a0yVZo2I/NPXx3UqK3CnI6sIgsRBo44+qVpKvd3GeIeVNDOK50gXmNLNarNNJL9MUBjzYb1eRXwIDAQAB";
 	
 	private Context mContext; 
 	private IabHelper mIabHelper;
